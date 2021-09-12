@@ -1,13 +1,10 @@
 # spring-boot-envers-audit-demo
-[Spring Data Jpa][2] provides rough audit information. However if you are looking for what are the exact changes being 
-made to an entity you can do so with [Spring Data Envers][1].
-
-As the name has suggested [Spring Data Envers][1] utilises and simplifies the usage of [Hibernate Envers][3].
+Spring Data Jpa provides rough audit information for any CRUD action performed on the entities.
 
 
 ## Enable Entity Audit
 By annotating an `@Entity` with `@Audited`, we are informing Spring that we would like respective entity to be audited. 
-The following example shows that we want all activities related to [Book][5] to be audited:
+The following example shows that we want all activities related to Book to be audited:
 
 ```java
 @Entity
@@ -28,7 +25,7 @@ public class Book {
 ```
 
 Next is to extend a `Repository` class in order to allow us to utilise audit revision features. This can be done by extending
-[RevisionRepository][6] interface to our `Repository` class. An example can be seen in [BookRepository][7]:
+RevisionRepository interface to our `Repository` class. An example can be seen in BookRepository:
 
 ```java
 public interface BookRepository extends JpaRepository<Book, Long>, RevisionRepository<Book, Long, Integer> {
