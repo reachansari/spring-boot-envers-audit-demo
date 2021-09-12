@@ -1,46 +1,43 @@
-# spring-boot-envers-audit-demo
-Spring Data Jpa provides rough audit information for any CRUD action performed on the entities.
+package com.example.demo.envers.audit.book;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.envers.repository.support.DefaultRevisionMetadata;
+import org.springframework.data.history.Revision;
+import org.springframework.data.history.Revisions;
+
+import com.example.demo.envers.audit.book.Book;
+import com.example.demo.envers.audit.book.BookRepository;
+import com.example.demo.envers.audit.config.AuditRevisionEntity;
+
+import java.util.Iterator;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
-## Enable Entity Audit
-By annotating an `@Entity` with `@Audited`, we are informing Spring that we would like respective entity to be audited. 
-The following example shows that we want all activities related to Book to be audited:
-
-```java
-@Entity
-@Audited
-public class Book {
-
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    @NotBlank
-    private String author;
-
-    @NotBlank
-    private String title;
-
-}
-```
-
-## Junit
-We will be utilising on `@SpringBootTest` to verify that our implementation works.
-
-### Upon Creation an Initial Revision is Created
-```java
 @SpringBootTest
 class BookRepositoryRevisionsTest {
 
     @Autowired
     private BookRepository repository;
-    
+
+    private Book book;
+
+    @BeforeEach
+    public void save() {
+        repository.deleteAll();
+
+        book = repository.save(
+        		new Book("Rudyard Kipling","Jungle Book")
+                //Book.builder().author("Rudyard Kipling").title("Jungle Book").build()
+        );
+    }
+
     @Test
     void initialRevision() {
-        Book book = repository.save(
-                             Book.builder().author("Rudyard Kipling").title("Jungle Book").build()
-                     );
-        
         Revisions<Integer, Book> revisions = repository.findRevisions(book.getId());
 
         assertThat(revisions)
@@ -48,25 +45,18 @@ class BookRepositoryRevisionsTest {
                 .allSatisfy(revision -> assertThat(revision.getEntity())
                         .extracting(Book::getId, Book::getAuthor, Book::getTitle)
                         .containsExactly(book.getId(), book.getAuthor(), book.getTitle())
+                )
+                .allSatisfy(revision -> {
+                            DefaultRevisionMetadata metadata = (DefaultRevisionMetadata) revision.getMetadata();
+                            AuditRevisionEntity revisionEntity = metadata.getDelegate();
+
+                            assertThat(revisionEntity.getUsername()).isEqualTo("wade.wilson");
+                        }
                 );
     }
-}
-```
 
-### Revision Number Will Be Increase and Latest Revision is Available
-```java
-@SpringBootTest
-class BookRepositoryRevisionsTest {
-
-    @Autowired
-    private BookRepository repository;
-    
     @Test
     void updateIncreasesRevisionNumber() {
-        Book book = repository.save(
-                             Book.builder().author("Rudyard Kipling").title("Jungle Book").build()
-                     );
-    
         book.setTitle("If");
 
         repository.save(book);
@@ -76,31 +66,17 @@ class BookRepositoryRevisionsTest {
         assertThat(revision)
                 .isPresent()
                 .hasValueSatisfying(rev ->
-                        assertThat(rev.getRevisionNumber()).hasValue(2)
+                        assertThat(rev.getRevisionNumber()).hasValue(3)
                 )
                 .hasValueSatisfying(rev ->
                         assertThat(rev.getEntity())
                                 .extracting(Book::getTitle)
-                                .containsOnly("If")
+                                .isEqualTo("If")
                 );
     }
-}
-```
 
-### Upon Deletion All Entity Information Will be Removed Except its ID
-```java
-@SpringBootTest
-class BookRepositoryRevisionsTest {
-
-    @Autowired
-    private BookRepository repository;
-    
     @Test
     void deletedItemWillHaveRevisionRetained() {
-        Book book = repository.save(
-                             Book.builder().author("Rudyard Kipling").title("Jungle Book").build()
-                     );
-
         repository.delete(book);
 
         Revisions<Integer, Book> revisions = repository.findRevisions(book.getId());
@@ -126,18 +102,3 @@ class BookRepositoryRevisionsTest {
                 );
     }
 }
-```
-## Libraries used
-- Spring Boot
-- Spring Configuration
-- Spring REST Controller
-- Spring JPA
-- H2
-- Development Tools
-
-
-## Compilation Command
-- `mvn clean install` - Plain maven clean and install
-
-
-
