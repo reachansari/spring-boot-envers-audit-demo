@@ -130,7 +130,6 @@ class BookRepositoryRevisionsTest {
 ## Libraries used
 - Spring Boot
 - Spring Configuration
-- Spring REST Controller
 - Spring JPA
 - H2
 - Development Tools
