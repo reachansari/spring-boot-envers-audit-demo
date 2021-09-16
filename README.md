@@ -1,10 +1,10 @@
 # spring-boot-envers-audit-demo
-Spring Data Jpa provides rough audit information for any CRUD action performed on the entities.
+Spring Data Jpa provides audit information for any CRUD action performed on the entities.
 
 
 ## Enable Entity Audit
-By annotating an `@Entity` with `@Audited`, we are informing Spring that we would like respective entity to be audited. 
-The following example shows that we want all activities related to Book to be audited:
+By annotating an `@Entity` with `@Audited`, we are making the respective entity to be audited. 
+The following example shows that all activities related to Book to be audited:
 
 ```java
 @Entity
@@ -25,7 +25,7 @@ public class Book {
 ```
 
 ## Junit
-We will be utilising on `@SpringBootTest` to verify that our implementation works.
+We are using `@SpringBootTest` to do are junit testing.
 
 ### Upon Creation an Initial Revision is Created
 ```java
