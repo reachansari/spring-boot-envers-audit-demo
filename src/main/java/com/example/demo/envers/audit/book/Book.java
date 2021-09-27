@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Audited
-@Builder
+
 
 public class Book extends AuditEnabledEntity {
 
